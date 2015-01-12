@@ -66,7 +66,60 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+#location
+{
+  text-align: center;
+  padding-top:30px;
+}
 
+#latitudetext
+{
+  display: inline-block;
+}
+.freechannelinfo
+{
+  width:100%;
+  height:60px;
+  float: left;
+}
+
+.channeltext
+{
+  float: left;
+  width:200px;
+  padding-right:20px;
+}
+
+.freeicon
+{
+  background-color: #87C38A;
+  border-radius: 50px;
+  width:50px;
+  height:50px;
+  text-align:center;
+  float: left;
+
+}
+
+.freeicon p{
+  position: relative;
+  top:00px;
+}
+
+#freechanneldata
+{
+  width:100%;
+  min-height: 100px;
+  max-height:200px;
+  overflow: scroll;
+  background-color:#FFD76A;
+}
+
+#longitudetext
+{
+  display:inline-block;
+
+}
 
 
 #map-canvas{
@@ -75,10 +128,15 @@ textarea {
   position: relative;
 }
 
+#thresholdslider
+{
+  width:300px;
+  display:inline-block;
+}
 
 #bandslider{
   width:300px;
-  padding: 30px;
+
   display:inline-block;
 }
 

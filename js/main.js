@@ -11,19 +11,32 @@ var HEATMAP_DATA_CACHE = {};
 var marker;
 var graphobj;
 var currentband = 0;
+var currentThreshold = 500;
+var BANDWIDTH = normalised["band_width"];
+var pointdata;
 
 var graphdatasets = [
-{
+{//frequency power
   lineColor : 'rgba(220,220,220,1)',
   pointColor : 'rgba(220,220,220,1)',
   pointStrokeColor : '#fff',
   data : [[normalised["bands"][0], -2], [normalised["bands"][1], 1.3], [normalised["bands"][2], 0], [normalised["bands"][3], 1.5], [normalised["bands"][4], 1]
   , [normalised["bands"][5], 1], [normalised["bands"][6], 1], [normalised["bands"][7], 1]]
-},{
+},{//start band
   lineColor : 'rgba(0,0,225,1)',
   pointColor : 'rgba(220,220,220,1)',
   pointStrokeColor : '#fff',
   data : [[ normalised["bands"][1] ,0],[ normalised["bands"][1] ,100]]
+},{//end band
+  lineColor : 'rgba(0,0,225,1)',
+  pointColor : 'rgba(220,220,220,1)',
+  pointStrokeColor : '#fff',
+  data : [[ normalised["bands"][1] + BANDWIDTH ,0],[ normalised["bands"][1] + BANDWIDTH,100]]
+},{//threshold
+  lineColor : 'rgba(225,0,0,1)',
+  pointColor : 'rgba(220,220,220,1)',
+  pointStrokeColor : '#fff',
+  data : [[ normalised["bands"][0] ,currentThreshold],[ normalised["bands"][normalised["bands"].length-1] , currentThreshold] ]
 }
 
 
@@ -77,6 +90,68 @@ function calibrateControl(bands, bandwidth)
   // to the slide event.
   $('#bandslider').on('slide', bandsliderchange);
 
+}
+
+function calibrateFreeChannelSlider()
+{
+  $('#thresholdslider').noUiSlider({
+    behaviour: 'tap',
+    start: [500],
+    range: {
+      'min': 0,
+      'max': 3000
+    },
+  });
+
+  $('#thresholdslider').on('slide', thresholdchanged);
+  determineFreeChannels($('#thresholdslider').val());
+}
+
+function drawThreshold(threshval)
+{
+//[[ normalised["bands"][0] ,currentThreshold],[ normalised["bands"][normalised["bands"].length-1] , currentThreshold] ]
+graphdatasets[3]["data"][0][1] = threshval;
+graphdatasets[3]["data"][1][1] = threshval;
+}
+
+function determineFreeChannels(threshold)
+{
+  //current point is pointdata
+  //which bands are free?
+
+  var freebands = [];
+
+  pointdata["spectrum"].forEach(function(bandpower, bandidx){
+    if(bandpower < threshold)
+    {
+      freebands.push(bandidx);
+    }
+  });
+  $("#channelsfree").html(freebands.length);
+  displayFreeChannels(freebands);
+  console.log(freebands);
+}
+
+function displayFreeChannels(freechannels)
+{
+  //draw free channel divs
+
+  var divtext = "";
+  freechannels.forEach(function(indexofband){
+    divtext += " <div class=\"freechannelinfo\"><div class=\"channeltext\">" + normalised["bands"][indexofband] +  " MHz →" +  parseFloat(normalised["bands"][indexofband] + BANDWIDTH).toFixed(2) + " MHz"+ "</div><div class=\"freeicon\"><p>free!</p></div></div>"
+    console.log(divtext);
+  });
+
+  $("#freechanneldata").html(divtext);
+}
+
+function thresholdchanged()
+{
+  //redraw threshold line to graph
+  drawThreshold($('#thresholdslider').val());
+  determineFreeChannels($('#thresholdslider').val());
+  //redraw
+  graphobj.draw(graphdatasets, true);
 }
 
 function findNearestDataPoints(lat, lng)
@@ -164,19 +239,17 @@ function mapBand(whichband, map, normdataset) {
 
 function redrawgraph(bandpowers)
 {
-
-
   //update dataset with closest point data
   graphdatasets[0]["data"].forEach(function(point, idx){
     point[1] = bandpowers[idx];
     console.log(point);
-
-
   });
 
   //redraw
   graphobj.draw(graphdatasets, true);
 }
+
+
 
 function createChart()
 {
@@ -199,6 +272,11 @@ function updateBandIndicator()
   graphdatasets[1]["data"][0][0] =  normalised["bands"][currentband];
   graphdatasets[1]["data"][1][0] =  normalised["bands"][currentband];
   graphdatasets[1]["data"][1][1] = graphobj.rangeY[1];
+
+  graphdatasets[2]["data"][0][0] =  normalised["bands"][currentband] + BANDWIDTH;
+  graphdatasets[2]["data"][1][0] =  normalised["bands"][currentband] + BANDWIDTH;
+  graphdatasets[2]["data"][1][1] = graphobj.rangeY[1];
+
   graphobj.draw(graphdatasets);
 
 }
@@ -209,14 +287,45 @@ function bandsliderchange()
   mapBand(renderband, map, normalised);
   currentband = renderband;
   updateBandIndicator();
+  updateBandText(currentband);
 }
 
 function userdiddropmarker(dropevent)
 {
-  console.log(dropevent);
+  //console.log(dropevent);
   var near = findNearestDataPoints(dropevent["latLng"].k, dropevent["latLng"].D);
   redrawgraph(near["spectrum"]);
+  console.log(near);
+  var measurementdate = new Date(near["ts"]*1000);
+  console.log(measurementdate);
+  pointdata = near;
+  updateBandIndicator();
+  //update the marker text
+  updateMarkerText(dropevent["latLng"].k, dropevent["latLng"].D);
+  updateDateText(measurementdate);
+  thresholdchanged();
 }
+
+function updateDateText(dateobj)
+{
+  $("#datetext").html(dateobj.toString());
+}
+
+
+function updateMarkerText(lat, lng)
+{
+  $("#latitudetext").html("LAT : " + lat);
+  $("#longitudetext").html("LNG : " + lng);
+}
+
+function updateBandText(bandnumber)
+{
+  var upperlimit = normalised["bands"][bandnumber] + BANDWIDTH
+  $("#bandtext").html(normalised["bands"][bandnumber] + " MHz ⇒ " + upperlimit + " MHz");
+
+}
+
+
 
 function initialize() {
   var mapOptions = {
@@ -230,7 +339,9 @@ function initialize() {
 
   map.setCenter({lat:normalised["points"][0].lat, lng:normalised["points"][0].lon});
 
-  calibrateControl(normalised["bands"], normalised["band_width"])
+  updateMarkerText(normalised["points"][0].lat, normalised["points"][0].lon);
+
+  calibrateControl(normalised["bands"], normalised["band_width"]);
   mapBand(0, map, normalised);
   createChart();
 
@@ -240,12 +351,15 @@ function initialize() {
     animation: google.maps.Animation.DROP,
     position: map.getCenter()
   });
-
+  pointdata = findNearestDataPoints(normalised["points"][0].lat, normalised["points"][0].lon);
   var nearest = findNearestDataPoints(normalised["points"][0].lat, normalised["points"][0].lon);
   redrawgraph(nearest["spectrum"]);
-
+  updateBandIndicator();
+  calibrateFreeChannelSlider();
+  updateBandText();
   google.maps.event.addListener(marker, 'dragend', userdiddropmarker);
 
 }
+
 
 google.maps.event.addDomListener(window, 'load', initialize);
