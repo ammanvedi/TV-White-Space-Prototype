@@ -110,7 +110,7 @@ textarea {
 {
   width:100%;
   min-height: 100px;
-  max-height:200px;
+  max-height:500px;
   overflow: scroll;
   background-color:#FFD76A;
 }
@@ -147,6 +147,7 @@ textarea {
   margin: 0 auto;
   padding-top: 20px;
   padding-bottom: 10px;
+  
 
 }
 
@@ -159,6 +160,61 @@ textarea {
   z-index: 1000;
   top:0px;
   text-align:center;
+  overflow:hidden;
+}
+
+#displayindicator p
+{
+  color: #fff;
+  margin-top:0px;
+}
+
+#displayindicator h1
+{
+  font-size:11px;
+  margin-bottom:0px;
+  color: #fff;
+}
+
+#nochannels{
+
+  z-index:1000;
+  position: absolute;
+  width:300px;
+  padding: 5px;
+  height:50px;
+  background-color:RGBA(0,0,0,0.6);
+  border-radius:10px;
+  text-align:center;
+  margin-top:10px;
+  border: 3px #FFF30F solid;
+  margin:20px auto;
+}
+
+#nochannels h1
+{
+  font-size:11px;
+  margin-bottom:0px;
+  color: #fff;
+  position:relative;
+  top:10px;
+
+}
+
+
+#displayindicator{
+  right:40%;
+  z-index:1000;
+  position: absolute;
+  min-width:300px;
+  max-width:350px;
+  padding: 5px;
+  height:50px;
+  background-color:RGBA(0,0,0,0.6);
+  border-radius:10px;
+  text-align:center;
+  margin-top:10px;
+  border: 3px #FFF30F solid;
 }
 
 

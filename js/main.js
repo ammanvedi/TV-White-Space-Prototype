@@ -1,7 +1,7 @@
 
 
 
-console.log(normalised);
+console.log(datasettouse);
 console.log(style_black_blue);
 
 var bandskeymap = {};
@@ -12,38 +12,40 @@ var marker;
 var graphobj;
 var currentband = 0;
 var currentThreshold = 500;
-var BANDWIDTH = normalised["band_width"];
 var pointdata;
+var datasettouse = peakpower;
+var mappingdataset = peakpowernormalised;
+var BANDWIDTH = datasettouse["band_width"];
 
 var graphdatasets = [
 {//frequency power
   lineColor : 'rgba(220,220,220,1)',
   pointColor : 'rgba(220,220,220,1)',
   pointStrokeColor : '#fff',
-  data : [[normalised["bands"][0], -2], [normalised["bands"][1], 1.3], [normalised["bands"][2], 0], [normalised["bands"][3], 1.5], [normalised["bands"][4], 1]
-  , [normalised["bands"][5], 1], [normalised["bands"][6], 1], [normalised["bands"][7], 1]]
+  data : [[datasettouse["bands"][0], -2], [datasettouse["bands"][1], 1.3], [datasettouse["bands"][2], 0], [datasettouse["bands"][3], 1.5], [datasettouse["bands"][4], 1]
+  , [datasettouse["bands"][5], 1], [datasettouse["bands"][6], 1], [datasettouse["bands"][7], 1]]
 },{//start band
   lineColor : 'rgba(0,0,225,1)',
   pointColor : 'rgba(220,220,220,1)',
   pointStrokeColor : '#fff',
-  data : [[ normalised["bands"][1] ,0],[ normalised["bands"][1] ,100]]
+  data : [[ datasettouse["bands"][1] ,0],[ datasettouse["bands"][1] ,-50]]
 },{//end band
   lineColor : 'rgba(0,0,225,1)',
   pointColor : 'rgba(220,220,220,1)',
   pointStrokeColor : '#fff',
-  data : [[ normalised["bands"][1] + BANDWIDTH ,0],[ normalised["bands"][1] + BANDWIDTH,100]]
+  data : [[ datasettouse["bands"][1] + BANDWIDTH ,0],[ datasettouse["bands"][1] + BANDWIDTH,-100]]
 },{//threshold
   lineColor : 'rgba(225,0,0,1)',
   pointColor : 'rgba(220,220,220,1)',
   pointStrokeColor : '#fff',
-  data : [[ normalised["bands"][0] ,currentThreshold],[ normalised["bands"][normalised["bands"].length-1] , currentThreshold] ]
+  data : [[ datasettouse["bands"][0] ,currentThreshold],[ datasettouse["bands"][datasettouse["bands"].length-1] , currentThreshold] ]
 }
 
 
 ];
 
 
-normalised["bands"].forEach(function(band, idx){
+datasettouse["bands"].forEach(function(band, idx){
 
   bandskeymap[band.toFixed(2)] = idx;
 
@@ -98,8 +100,8 @@ function calibrateFreeChannelSlider()
     behaviour: 'tap',
     start: [500],
     range: {
-      'min': 0,
-      'max': 3000
+      'min': -50,
+      'max': 10
     },
   });
 
@@ -109,7 +111,7 @@ function calibrateFreeChannelSlider()
 
 function drawThreshold(threshval)
 {
-//[[ normalised["bands"][0] ,currentThreshold],[ normalised["bands"][normalised["bands"].length-1] , currentThreshold] ]
+//[[ datasettouse["bands"][0] ,currentThreshold],[ datasettouse["bands"][datasettouse["bands"].length-1] , currentThreshold] ]
 graphdatasets[3]["data"][0][1] = threshval;
 graphdatasets[3]["data"][1][1] = threshval;
 }
@@ -135,10 +137,17 @@ function determineFreeChannels(threshold)
 function displayFreeChannels(freechannels)
 {
   //draw free channel divs
+  if(freechannels.length == 0 )
+  {
+    //no free channels found
+    //display consistant message
+    $("#freechanneldata").html("<div id=\"nochannels\"><h1>OOPS! There are no free bands to show</h1></div>");
+    return;
+  }
 
   var divtext = "";
   freechannels.forEach(function(indexofband){
-    divtext += " <div class=\"freechannelinfo\"><div class=\"channeltext\">" + normalised["bands"][indexofband] +  " MHz →" +  parseFloat(normalised["bands"][indexofband] + BANDWIDTH).toFixed(2) + " MHz"+ "</div><div class=\"freeicon\"><p>free!</p></div></div>"
+    divtext += " <div class=\"freechannelinfo\"><div class=\"channeltext\">" + datasettouse["bands"][indexofband] +  " MHz →" +  parseFloat(datasettouse["bands"][indexofband] + BANDWIDTH).toFixed(2) + " MHz"+ "</div><div class=\"freeicon\"><p>free!</p></div></div>"
     console.log(divtext);
   });
 
@@ -163,7 +172,7 @@ function findNearestDataPoints(lat, lng)
   var calcdist;
   var lowestidx;
   var comparepoint;
-  tenmeterunnorm["points"].forEach(function(points, idx){
+  datasettouse["points"].forEach(function(points, idx){
     comparepoint = new google.maps.LatLng(points.lat, points.lon);
     //distance from this point
     calcdist = google.maps.geometry.spherical.computeDistanceBetween(point, comparepoint);
@@ -178,9 +187,9 @@ function findNearestDataPoints(lat, lng)
   });
 
   console.log("lowest item at points index " + lowestidx + " and the distance is " + distance);
-  console.log(normalised["points"][lowestidx]);
+  console.log(datasettouse["points"][lowestidx]);
 
-  return tenmeterunnorm["points"][lowestidx];
+  return datasettouse["points"][lowestidx];
 }
 
 
@@ -257,8 +266,8 @@ function createChart()
 
   var ctx = document.getElementById('frequencyChart').getContext('2d');
 
-  graphobj = new Xy(ctx, {width:150, height:100, labelFontSize:6
-                          , pointCircleRadius:2, pointStrokeWidth: 1, lineWidth:2});
+  graphobj = new Xy(ctx, {width:150, height:150, labelFontSize:6
+                          , pointCircleRadius:2, pointStrokeWidth: 1, lineWidth:2, rangeY: [-50, 20]});
 
   graphobj.draw(graphdatasets);
 
@@ -269,13 +278,13 @@ function updateBandIndicator()
 
   console.log(graphobj.rangeY[0]);
   //set lower point to current band
-  graphdatasets[1]["data"][0][0] =  normalised["bands"][currentband];
-  graphdatasets[1]["data"][1][0] =  normalised["bands"][currentband];
-  graphdatasets[1]["data"][1][1] = graphobj.rangeY[1];
+  graphdatasets[1]["data"][0][0] =  datasettouse["bands"][currentband];
+  graphdatasets[1]["data"][1][0] =  datasettouse["bands"][currentband];
+  graphdatasets[1]["data"][1][1] = graphobj.rangeY[0];
 
-  graphdatasets[2]["data"][0][0] =  normalised["bands"][currentband] + BANDWIDTH;
-  graphdatasets[2]["data"][1][0] =  normalised["bands"][currentband] + BANDWIDTH;
-  graphdatasets[2]["data"][1][1] = graphobj.rangeY[1];
+  graphdatasets[2]["data"][0][0] =  datasettouse["bands"][currentband] + BANDWIDTH;
+  graphdatasets[2]["data"][1][0] =  datasettouse["bands"][currentband] + BANDWIDTH;
+  graphdatasets[2]["data"][1][1] = graphobj.rangeY[0];
 
   graphobj.draw(graphdatasets);
 
@@ -284,7 +293,7 @@ function updateBandIndicator()
 function bandsliderchange()
 {
   var renderband = bandskeymap[parseFloat($("#bandslider").val()).toFixed(2)];
-  mapBand(renderband, map, normalised);
+  mapBand(renderband, map, peakpowernormalised);
   currentband = renderband;
   updateBandIndicator();
   updateBandText(currentband);
@@ -320,8 +329,10 @@ function updateMarkerText(lat, lng)
 
 function updateBandText(bandnumber)
 {
-  var upperlimit = normalised["bands"][bandnumber] + BANDWIDTH
-  $("#bandtext").html(normalised["bands"][bandnumber] + " MHz ⇒ " + upperlimit + " MHz");
+  var upperlimit = datasettouse["bands"][bandnumber] + BANDWIDTH
+  $("#bandtext").html(datasettouse["bands"][bandnumber] + " MHz ⇒ " + upperlimit + " MHz");
+  //update text in map overlay also
+  $("#displayindicator").html("<h1>Now Showing Heatmap For Band</h1><p>" + datasettouse["bands"][bandnumber] + " MHz ⇒ " + upperlimit + " MHz</p>")
 
 }
 
@@ -337,12 +348,12 @@ function initialize() {
   map = new google.maps.Map(document.getElementById('map-canvas'),
   mapOptions);
 
-  map.setCenter({lat:normalised["points"][0].lat, lng:normalised["points"][0].lon});
+  map.setCenter({lat:datasettouse["points"][0].lat, lng:datasettouse["points"][0].lon});
 
-  updateMarkerText(normalised["points"][0].lat, normalised["points"][0].lon);
+  updateMarkerText(datasettouse["points"][0].lat, datasettouse["points"][0].lon);
 
-  calibrateControl(normalised["bands"], normalised["band_width"]);
-  mapBand(0, map, normalised);
+  calibrateControl(datasettouse["bands"], datasettouse["band_width"]);
+  mapBand(0, map, peakpowernormalised);
   createChart();
 
   marker = new google.maps.Marker({
@@ -351,12 +362,12 @@ function initialize() {
     animation: google.maps.Animation.DROP,
     position: map.getCenter()
   });
-  pointdata = findNearestDataPoints(normalised["points"][0].lat, normalised["points"][0].lon);
-  var nearest = findNearestDataPoints(normalised["points"][0].lat, normalised["points"][0].lon);
+  pointdata = findNearestDataPoints(datasettouse["points"][0].lat, datasettouse["points"][0].lon);
+  var nearest = findNearestDataPoints(datasettouse["points"][0].lat, datasettouse["points"][0].lon);
   redrawgraph(nearest["spectrum"]);
   updateBandIndicator();
   calibrateFreeChannelSlider();
-  updateBandText();
+  updateBandText(currentband);
   google.maps.event.addListener(marker, 'dragend', userdiddropmarker);
 
 }
