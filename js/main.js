@@ -11,7 +11,7 @@ var HEATMAP_DATA_CACHE = {};
 var marker;
 var graphobj;
 var currentband = 0;
-var currentThreshold = 500;
+var currentThreshold = -30;
 var pointdata;
 var datasettouse = peakpower;
 var mappingdataset = peakpowernormalised;
@@ -19,24 +19,24 @@ var BANDWIDTH = datasettouse["band_width"];
 
 var graphdatasets = [
 {//frequency power
-  lineColor : 'rgba(220,220,220,1)',
-  pointColor : 'rgba(220,220,220,1)',
+  lineColor : 'rgba(0,255,0,1)',
+  pointColor : 'rgba(0,150,0,1)',
   pointStrokeColor : '#fff',
   data : [[datasettouse["bands"][0], -2], [datasettouse["bands"][1], 1.3], [datasettouse["bands"][2], 0], [datasettouse["bands"][3], 1.5], [datasettouse["bands"][4], 1]
   , [datasettouse["bands"][5], 1], [datasettouse["bands"][6], 1], [datasettouse["bands"][7], 1]]
 },{//start band
   lineColor : 'rgba(0,0,225,1)',
-  pointColor : 'rgba(220,220,220,1)',
+  pointColor : 'rgba(220,220,220,0)',
   pointStrokeColor : '#fff',
   data : [[ datasettouse["bands"][1] ,0],[ datasettouse["bands"][1] ,-50]]
 },{//end band
   lineColor : 'rgba(0,0,225,1)',
-  pointColor : 'rgba(220,220,220,1)',
+  pointColor : 'rgba(220,220,220,0)',
   pointStrokeColor : '#fff',
   data : [[ datasettouse["bands"][1] + BANDWIDTH ,0],[ datasettouse["bands"][1] + BANDWIDTH,-100]]
 },{//threshold
   lineColor : 'rgba(225,0,0,1)',
-  pointColor : 'rgba(220,220,220,1)',
+  pointColor : 'rgba(220,220,220,0)',
   pointStrokeColor : '#fff',
   data : [[ datasettouse["bands"][0] ,currentThreshold],[ datasettouse["bands"][datasettouse["bands"].length-1] , currentThreshold] ]
 }
@@ -98,7 +98,7 @@ function calibrateFreeChannelSlider()
 {
   $('#thresholdslider').noUiSlider({
     behaviour: 'tap',
-    start: [500],
+    start: [-30],
     range: {
       'min': -50,
       'max': 10
@@ -266,8 +266,8 @@ function createChart()
 
   var ctx = document.getElementById('frequencyChart').getContext('2d');
 
-  graphobj = new Xy(ctx, {width:150, height:150, labelFontSize:6
-                          , pointCircleRadius:2, pointStrokeWidth: 1, lineWidth:2, rangeY: [-50, 20]});
+  graphobj = new Xy(ctx, {width:300, height:200, labelFontSize:10
+                          , pointCircleRadius:5, pointStrokeWidth: 1, lineWidth:2, rangeY: [-50, 20]});
 
   graphobj.draw(graphdatasets);
 
