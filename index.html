@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="css/normalize.min.css">
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="css/jquery.nouislider.min.css">
+
+        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+    </head>
+    <body>
+
+      <div id="displayindicator">
+
+      </div>
+        <div id="map-canvas"></div>
+        <div id="sidebar">
+          <div id="location">
+            <div id="latitudetext"></div><br/>
+            <div id="longitudetext"></div>
+            <div id="datetext"></div>
+
+          </div>
+
+          <canvas id="frequencyChart"></canvas>
+          <div id="bandslider"></div>
+          <div id="bandtext"></div>
+
+
+          <div id="thresholdslider"></div>
+          <div id="channelsindicator">
+            <div id="channelsfree"></div>
+            <div>Channels Free : </div>
+
+            <div id="freechanneldata">
+
+            </div>
+
+
+          </div>
+        </div>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.1.min.js"><\/script>')</script>
+        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=visualization,geometry&sensor=true_or_false&key=AIzaSyA1t67Aa6hyiIiZGebHPfGpJVc2UX8773o"></script>
+        <script type="text/javascript" src="data/datasets.js"></script>
+        <script type="text/javascript" src="js/vendor/jquery.nouislider.min.js"></script>
+        <script type="text/javascript" src="js/vendor/xy.js/dist/xy.min.js"></script>
+        <script type="text/javascript" src="js/MAPSTYLES.js"></script>
+        <script src="js/main.js"></script>
+
+    </body>
+</html>
